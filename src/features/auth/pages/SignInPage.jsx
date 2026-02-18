@@ -4,7 +4,7 @@ import { signIn } from '../../../api/auth/signInApi'
 import AuthCard from '../../../components/ui/AuthCard'
 import Button from '../../../components/ui/Button'
 import FormField from '../../../components/ui/FormField'
-
+import GoogleLoginButton from '../../../components/ui/GoogleLoginButton'
 const initialForm = {
   email: '',
   password: '',
@@ -34,9 +34,16 @@ function SignInPage() {
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState('')
+  const [isForgotOpen, setIsForgotOpen] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotTouched, setForgotTouched] = useState(false)
 
   const errors = useMemo(() => validate(form), [form])
   const hasErrors = Object.keys(errors).length > 0
+  const forgotEmailError =
+    forgotTouched && !/\S+@\S+\.\S+/.test(forgotEmail.trim())
+      ? 'Please enter a valid email address.'
+      : ''
 
   const showError = (field) => touched[field] || submitted
 
@@ -66,6 +73,29 @@ function SignInPage() {
       setIsSubmitting(false)
     }
   }
+
+  const openForgotPassword = () => {
+    setForgotEmail(form.email)
+    setForgotTouched(false)
+    setIsForgotOpen(true)
+  }
+
+  const closeForgotPassword = () => {
+    setIsForgotOpen(false)
+    setForgotTouched(false)
+  }
+
+  const handleForgotPasswordSubmit = (event) => {
+    event.preventDefault()
+    setForgotTouched(true)
+
+    if (!/\S+@\S+\.\S+/.test(forgotEmail.trim())) return
+
+    console.log('Reset password email:', forgotEmail)
+    closeForgotPassword()
+  }
+
+
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg-main px-4 py-10 font-jakarta">
@@ -117,9 +147,13 @@ function SignInPage() {
               />
               <span>Remember me</span>
             </label>
-            <a className="text-highlight hover:underline" href="/">
+            <button
+              type="button"
+              className="text-highlight hover:underline"
+              onClick={openForgotPassword}
+            >
               Forgot password?
-            </a>
+            </button>
           </div>
 
           {apiError ? <p className="text-sm text-rose-300">{apiError}</p> : null}
@@ -127,8 +161,52 @@ function SignInPage() {
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </Button>
+
+          <div className="flex items-center gap-3 py-1">
+            <span className="h-px flex-1 bg-white/15" />
+            <span className="text-xs uppercase tracking-wide text-white/55">or</span>
+            <span className="h-px flex-1 bg-white/15" />
+          </div>
+
+        <GoogleLoginButton />
         </form>
       </AuthCard>
+
+      {isForgotOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/20 bg-bg-main p-6 shadow-2xl sm:p-7">
+            <h2 className="text-xl font-semibold text-white">Reset password</h2>
+            <p className="mt-2 text-sm text-white/70">
+              Enter your email and we will send a reset password link.
+            </p>
+
+            <form className="mt-5 space-y-4" onSubmit={handleForgotPasswordSubmit} noValidate>
+              <FormField
+                id="forgot-email"
+                type="email"
+                label="Email"
+                value={forgotEmail}
+                onChange={(event) => setForgotEmail(event.target.value)}
+                onBlur={() => setForgotTouched(true)}
+                placeholder="aman@example.com"
+                error={forgotEmailError || undefined}
+                autoComplete="email"
+              />
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={closeForgotPassword}
+                  className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight/70"
+                >
+                  Cancel
+                </button>
+                <Button type="submit">Send Link</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 }

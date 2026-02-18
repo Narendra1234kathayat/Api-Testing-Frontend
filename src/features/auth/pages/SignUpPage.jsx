@@ -4,9 +4,9 @@ import { signUp } from '../../../api/auth/signUpApi'
 import AuthCard from '../../../components/ui/AuthCard'
 import Button from '../../../components/ui/Button'
 import FormField from '../../../components/ui/FormField'
+import { GoogleLogin } from '@react-oauth/google'
 
 const initialForm = {
-  fullName: '',
   email: '',
   password: '',
   confirmPassword: '',
@@ -14,10 +14,6 @@ const initialForm = {
 
 function validate(form) {
   const errors = {}
-
-  if (!form.fullName.trim()) {
-    errors.fullName = 'Full name is required.'
-  }
 
   if (!form.email.trim()) {
     errors.email = 'Email is required.'
@@ -73,9 +69,9 @@ function SignUpPage() {
       setApiError('')
 
       await signUp({
-        fullName: form.fullName,
         email: form.email,
         password: form.password,
+        confirmPassword: form.confirmPassword,
       })
 
       console.log('Sign up success')
@@ -103,17 +99,6 @@ function SignUpPage() {
         }
       >
         <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-          <FormField
-            id="fullName"
-            label="Full Name"
-            value={form.fullName}
-            onChange={handleChange('fullName')}
-            onBlur={handleBlur('fullName')}
-            placeholder="Aman Sharma"
-            error={showError('fullName') ? errors.fullName : undefined}
-            autoComplete="name"
-          />
-
           <FormField
             id="email"
             type="email"
@@ -157,6 +142,14 @@ function SignUpPage() {
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Creating...' : 'Create Account'}
           </Button>
+
+          <div className="flex items-center gap-3 py-1">
+            <span className="h-px flex-1 bg-white/15" />
+            <span className="text-xs uppercase tracking-wide text-white/55">or</span>
+            <span className="h-px flex-1 bg-white/15" />
+          </div>
+
+          <GoogleLogin/>
         </form>
       </AuthCard>
     </main>
