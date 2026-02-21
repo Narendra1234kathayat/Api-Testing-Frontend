@@ -4,12 +4,22 @@ import { signUp } from '../../../api/auth/signUpApi'
 import AuthCard from '../../../components/ui/AuthCard'
 import Button from '../../../components/ui/Button'
 import FormField from '../../../components/ui/FormField'
-import { GoogleLogin } from '@react-oauth/google'
-
+import { request } from '../../../api/auth/authClient'
+import { googleApi } from '../../../api/auth/googleApi'
+import GoogleLoginButton from '../../../components/ui/GoogleLoginButton'
 const initialForm = {
   email: '',
   password: '',
   confirmPassword: '',
+}
+const handleSuccess = async (credentialResponse) => {
+  try {
+    const googleToken = credentialResponse.credential;
+    await googleApi({googleToken})
+    alert("Google login success ");
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 function validate(form) {
@@ -149,7 +159,8 @@ function SignUpPage() {
             <span className="h-px flex-1 bg-white/15" />
           </div>
 
-          <GoogleLogin/>
+          <GoogleLoginButton onSuccess={handleSuccess}
+            onError={() => console.log('Login Failed')} />
         </form>
       </AuthCard>
     </main>

@@ -5,6 +5,7 @@ import AuthCard from '../../../components/ui/AuthCard'
 import Button from '../../../components/ui/Button'
 import FormField from '../../../components/ui/FormField'
 import GoogleLoginButton from '../../../components/ui/GoogleLoginButton'
+import { forgotPassword } from '../../../api/auth/forgotPasswordApi'
 const initialForm = {
   email: '',
   password: '',
@@ -85,12 +86,21 @@ function SignInPage() {
     setForgotTouched(false)
   }
 
-  const handleForgotPasswordSubmit = (event) => {
+  const handleForgotPasswordSubmit = async (event) => {
     event.preventDefault()
     setForgotTouched(true)
 
     if (!/\S+@\S+\.\S+/.test(forgotEmail.trim())) return
-
+    try {
+      setIsSubmitting(true)
+      setApiError('')
+      await forgotPassword({email:forgotEmail})
+      console.log('mail sent')
+    } catch (error) {
+      setApiError(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
     console.log('Reset password email:', forgotEmail)
     closeForgotPassword()
   }
@@ -168,7 +178,7 @@ function SignInPage() {
             <span className="h-px flex-1 bg-white/15" />
           </div>
 
-        <GoogleLoginButton />
+          <GoogleLoginButton />
         </form>
       </AuthCard>
 

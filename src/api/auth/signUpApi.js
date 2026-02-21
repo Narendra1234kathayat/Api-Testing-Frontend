@@ -1,9 +1,9 @@
 import { request } from './authClient'
 
 function signUp(payload) {
-  return request('/auth/signup', {
+  return request('/api/auth/signup', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    data: payload,
   })
 }
 
