@@ -1,9 +1,10 @@
 import { request } from './authClient'
 
 function signIn(payload) {
-  return request('/auth/signin', {
+  console.log(payload);
+  return request('/api/auth/signin', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    data:payload,
   })
 }
 

@@ -1,5 +1,6 @@
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { googleApi } from "../../api/auth/googleApi";
 
 export default function GoogleLoginButton() {
 
@@ -8,21 +9,18 @@ export default function GoogleLoginButton() {
       // 🟢 Google ID Token
       const googleToken = response.credential;
 
-      console.log("Google Token:", googleToken);
+      
 
       // 🔵 Send token to backend
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/google",
-        { googleToken }
-      );
+      const res = await googleApi({googleToken})
 
-      console.log("Backend response:", res.data);
+      console.log("Backend response:", res);
 
       // 🟡 Save YOUR backend JWT
-      localStorage.setItem("token", res.data.token);
+     // localStorage.setItem("token", res.data.token);
 
       // 🟣 Redirect user after login
-      window.location.href = "/dashboard";
+      window.location.href = "/workspace";
 
     } catch (error) {
       console.log("Login Error:", error.response?.data || error.message);
