@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { signIn } from '../../../api/auth/signInApi'
 import AuthCard from '../../../components/ui/AuthCard'
 import Button from '../../../components/ui/Button'
 import FormField from '../../../components/ui/FormField'
 import GoogleLoginButton from '../../../components/ui/GoogleLoginButton'
 import { forgotPassword } from '../../../api/auth/forgotPasswordApi'
+import { markAuthenticated } from '../../../utils/auth'
+import { useUser } from '../../../context/useUser'
 const initialForm = {
   email: '',
   password: '',
@@ -30,6 +32,9 @@ function validate(form) {
 }
 
 function SignInPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { setUser } = useUser()
   const [form, setForm] = useState(initialForm)
   const [touched, setTouched] = useState({})
   const [submitted, setSubmitted] = useState(false)
@@ -47,6 +52,7 @@ function SignInPage() {
       : ''
 
   const showError = (field) => touched[field] || submitted
+  const redirectPath = location.state?.from || '/workspace'
 
   const handleChange = (field) => (event) => {
     setForm((prev) => ({ ...prev, [field]: event.target.value }))
@@ -66,8 +72,20 @@ function SignInPage() {
     try {
       setIsSubmitting(true)
       setApiError('')
-      await signIn(form)
-      console.log('Sign in success')
+      const res = await signIn(form)
+      const token = res?.tokens?.accessToken ?? res?.token ?? res?.tokens
+      const user = res?.user ?? (res?.userId ? { id: res.userId } : null)
+      if (token) {
+        localStorage.setItem(
+          'token',
+          typeof token === 'string' ? token : JSON.stringify(token)
+        )
+      }
+      if (user) {
+        setUser(user)
+      }
+      markAuthenticated()
+      navigate(redirectPath, { replace: true })
     } catch (error) {
       setApiError(error.message)
     } finally {
@@ -94,18 +112,14 @@ function SignInPage() {
     try {
       setIsSubmitting(true)
       setApiError('')
-      await forgotPassword({email:forgotEmail})
-      console.log('mail sent')
+      await forgotPassword({ email: forgotEmail })
     } catch (error) {
       setApiError(error.message)
     } finally {
       setIsSubmitting(false)
     }
-    console.log('Reset password email:', forgotEmail)
     closeForgotPassword()
   }
-
-
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg-main px-4 py-10 font-jakarta">

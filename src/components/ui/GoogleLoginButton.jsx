@@ -1,43 +1,62 @@
-import { GoogleLogin } from "@react-oauth/google";
-import axios from "axios";
-import { googleApi } from "../../api/auth/googleApi";
+import { GoogleLogin } from '@react-oauth/google'
+import { googleApi } from '../../api/auth/googleApi'
+import { markAuthenticated } from '../../utils/auth'
+import { useUser } from '../../context/useUser'
+
+function extractUser(res) {
+  return res?.user ?? res?.data?.user
+}
+
+function extractToken(res) {
+  return (
+    res?.tokens?.accessToken ??
+    res?.token ??
+    res?.tokens ??
+    res?.data?.tokens?.accessToken ??
+    res?.data?.token ??
+    res?.data?.tokens
+  )
+}
 
 export default function GoogleLoginButton() {
+  const { setUser } = useUser()
 
-  const handleSuccess = async (response) => {
+  const handleSuccess = async (credentialResponse) => {
     try {
-      // 🟢 Google ID Token
-      const googleToken = response.credential;
+      const googleToken = credentialResponse?.credential
+      if (!googleToken) {
+        throw new Error('Google credential is missing.')
+      }
 
-      
+      const res = await googleApi({ googleToken })
+      const token = extractToken(res)
+      if (token) {
+        localStorage.setItem(
+          'token',
+          typeof token === 'string' ? token : JSON.stringify(token)
+        )
+      }
+      const user = extractUser(res)
+      if (user) {
+        setUser(user)
+      }
 
-      // 🔵 Send token to backend
-      const res = await googleApi({googleToken})
+      markAuthenticated()
 
-      console.log("Backend response:", res);
-
-      // 🟡 Save YOUR backend JWT
-     // localStorage.setItem("token", res.data.token);
-
-      // 🟣 Redirect user after login
-      window.location.href = "/workspace";
-
+      window.location.href = '/workspace'
     } catch (error) {
-      console.log("Login Error:", error.response?.data || error.message);
+      console.log('Google Login Error:', error?.message || error)
     }
-  };
+  }
 
-  const handleError = () => {
-    console.log("Google Login Failed");
-  };
+  const handleGoogleError = () => {
+    alert('Google Login Failed. Please try again.')
+    console.log('Google Login Failed')
+  }
 
   return (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={handleError}
-        useOneTap
-      />
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <GoogleLogin onSuccess={handleSuccess} onError={handleGoogleError} useOneTap />
     </div>
-  );
+  )
 }

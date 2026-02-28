@@ -4,22 +4,12 @@ import { signUp } from '../../../api/auth/signUpApi'
 import AuthCard from '../../../components/ui/AuthCard'
 import Button from '../../../components/ui/Button'
 import FormField from '../../../components/ui/FormField'
-import { request } from '../../../api/auth/authClient'
-import { googleApi } from '../../../api/auth/googleApi'
 import GoogleLoginButton from '../../../components/ui/GoogleLoginButton'
+
 const initialForm = {
   email: '',
   password: '',
   confirmPassword: '',
-}
-const handleSuccess = async (credentialResponse) => {
-  try {
-    const googleToken = credentialResponse.credential;
-    await googleApi({googleToken})
-    alert("Google login success ");
-  } catch (error) {
-    alert(error.message);
-  }
 }
 
 function validate(form) {
@@ -83,8 +73,6 @@ function SignUpPage() {
         password: form.password,
         confirmPassword: form.confirmPassword,
       })
-
-      console.log('Sign up success')
     } catch (error) {
       setApiError(error.message)
     } finally {
@@ -159,8 +147,7 @@ function SignUpPage() {
             <span className="h-px flex-1 bg-white/15" />
           </div>
 
-          <GoogleLoginButton onSuccess={handleSuccess}
-            onError={() => console.log('Login Failed')} />
+          <GoogleLoginButton />
         </form>
       </AuthCard>
     </main>
