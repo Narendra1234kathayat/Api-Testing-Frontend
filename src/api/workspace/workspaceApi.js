@@ -1,14 +1,14 @@
 import { request } from '../auth/authClient'
 
 function getWorkspaces({ userId } = {}) {
-  return request('/api/workspaces', {
+  return request('/api/project/all-projects', {
     method: 'GET',
-    params: userId ? { userId } : undefined,
   })
 }
 
 function createWorkspace(payload) {
-  return request('/api/workspaces', {
+
+  return request('/api/project/create-project', {
     method: 'POST',
     data: payload,
   })
